@@ -18,9 +18,11 @@ type TxBase struct {
 }
 
 type Signer struct {
-	Account       Account
-	TxnSignature  *VariableLength
-	SigningPubKey *PublicKey
+	Signer struct {
+		Account       Account
+		TxnSignature  *VariableLength
+		SigningPubKey *PublicKey
+	}
 }
 
 type Payment struct {
@@ -285,6 +287,15 @@ func (t *TxBase) InitialiseForSigning() {
 	}
 	if t.TxnSignature == nil {
 		t.TxnSignature = new(VariableLength)
+	}
+}
+
+func (t *TxBase) InitialiseForMultiSigning() {
+	if t.SigningPubKey == nil {
+		t.SigningPubKey = new(PublicKey)
+	}
+	if t.Signers == nil {
+		t.Signers = make([]Signer, 0)
 	}
 }
 
