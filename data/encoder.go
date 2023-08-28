@@ -23,6 +23,10 @@ func SigningHash(s Signable) (Hash256, []byte, error) {
 	return raw(s, s.SigningPrefix(), true)
 }
 
+func MultiSignHash(s Signable, signerAccount Account) (Hash256, []byte, error) {
+	return multiRaw(s, HP_MULTI_SIGN, signerAccount, true)
+}
+
 func Node(h Storer) (Hash256, []byte, error) {
 	var header bytes.Buffer
 	for _, v := range []interface{}{h.Ledger(), h.Ledger(), h.NodeType(), h.Prefix()} {
@@ -47,6 +51,25 @@ func raw(value interface{}, prefix HashPrefix, ignoreSigningFields bool) (Hash25
 	if err := writeRaw(multi, value, ignoreSigningFields); err != nil {
 		return zero256, nil, err
 	}
+	var hash Hash256
+	copy(hash[:], hasher.Sum(nil))
+	return hash, buf.Bytes(), nil
+}
+
+func multiRaw(value interface{}, prefix HashPrefix, signerAccount Account, ignoreSigningFields bool) (Hash256, []byte, error) {
+	buf := new(bytes.Buffer)
+	hasher := sha512.New()
+	multi := io.MultiWriter(buf, hasher)
+	if err := write(hasher, prefix); err != nil {
+		return zero256, nil, err
+	}
+	if err := writeRaw(multi, value, ignoreSigningFields); err != nil {
+		return zero256, nil, err
+	}
+	if err := write(multi, signerAccount.Bytes()); err != nil {
+		return zero256, nil, err
+	}
+
 	var hash Hash256
 	copy(hash[:], hasher.Sum(nil))
 	return hash, buf.Bytes(), nil

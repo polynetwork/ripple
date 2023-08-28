@@ -118,6 +118,8 @@ type NegativeUNL struct {
 	ValidatorToReEnable *VariableLength     `json:",omitempty"`
 }
 
+type Unknow struct {}
+
 type Escrow struct {
 	leBase
 	Flags           *LedgerEntryFlag `json:",omitempty"`
